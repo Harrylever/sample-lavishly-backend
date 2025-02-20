@@ -31,22 +31,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
       path: httpAdapter.getRequestUrl(request) as string,
     };
 
-    const errorDetails: {
-      event_name: string;
-      message: string;
-      status: 'success' | 'error';
-    } = {
-      event_name: 'Error',
+    const errorDetails = {
       message: exception instanceof Error ? exception.message : 'Unknown error',
-      status: 'success',
-      // stack: exception instanceof Error ? exception.stack : 'No stack trace',
-      // statusCode: httpStatus,
-      // path: (request as { url?: string }).url,
-      // method: (request as { method?: string }).method,
-      // timestamp: new Date().toISOString(),
+      stack: exception instanceof Error ? exception.stack : 'No stack trace',
+      statusCode: httpStatus,
+      path: (request as { url?: string }).url,
+      method: (request as { method?: string }).method,
+      timestamp: new Date().toISOString(),
     };
 
-    await forwardToWebhook('ERROR_TRACING', errorDetails);
+    await forwardToWebhook('ERROR_TRACING', {
+      event_name: 'Error',
+      message: JSON.stringify(errorDetails),
+      status: 'success',
+    });
 
     httpAdapter.reply(response, responseBody, httpStatus);
   }
